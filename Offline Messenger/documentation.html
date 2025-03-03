@@ -1,0 +1,407 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OFFLINE MESSENGER C++</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <style type="text/css">
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1, h2, h3 {
+            color: #333;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        pre {
+            background-color: #1e1e1e;
+            border-radius: 5px;
+            padding: 15px;
+            overflow-x: auto;
+        }
+        .code-block {
+            margin: 20px 0;
+            background-color: #1e1e1e;
+            border-radius: 5px;
+            padding: 15px;
+        }
+        .section {
+            margin: 30px 0;
+        }
+        .note {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffeeba;
+            padding: 15px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Offline-messenger in C++ - Documentation</h1>
+        <div class="section">
+            <div class="note">
+                <p><strong>Student</strong>&nbsp;&nbsp;Turcanu Denis-Rafael</p>
+                <p><strong>Year</strong>&nbsp;&nbsp;2&nbsp;&nbsp;&nbsp;&nbsp; <strong>Group</strong>&nbsp;&nbsp;E3</p>
+                <p><strong>University</strong>&nbsp;&nbsp;FII, Alexandru Ioan Cuza, Iasi</p>
+            </div>
+        </div>
+        <div class="section">
+            <h2>What's This All About?</h2>
+            <p>Think of this as WhatsApp or Messenger, but running on your local network. You can:</p>
+            <ul>
+                <li>Chat with other users in real-time</li>
+                <li>Send messages to offline users (they'll get them when they log in)</li>
+                <li>Reply to specific messages</li>
+                <li>See your chat history with any user</li>
+                <li>Check who's currently online</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>How Does It Work?</h2>
+            
+            <h3>The Server</h3>
+            <p>Think of the server as a post office. It:</p>
+            <ul>
+                <li>Keeps track of who's online</li>
+                <li>Delivers messages immediately to online users</li>
+                <li>Holds messages for offline users (like a mailbox)</li>
+                <li>Maintains conversation histories</li>
+            </ul>
+            
+
+            <h3>The Client (Your Chat Window)</h3>
+            <p>This is your interface to the chat system. It:</p>
+            <ul>
+                <li>Connects you to the server</li>
+                <li>Shows incoming messages in real-time</li>
+                <li>Lets you send messages and commands</li>
+                <li>Keeps track of messages you might want to reply to</li>
+            </ul>
+            
+            
+        <div class="section">
+            <h2>Cool Features Explained</h2>
+
+            <h3>1. Replying to Messages</h3>
+            <p>Ever wanted to reply to a specific message? Here's how it works:</p>
+            <div class="code-block">
+                <pre><code class="language-text">
+[1][ALEX]: Hey, how's the weather there?
+
+// to reply to this message:
+> reply 1 alex It's sunny here!
+Referenced message:
+[1][ALEX]: Hey, how's the weather there?
+
+Reply sent successfully
+>
+                </code></pre>
+            </div>
+
+            <h3>2. Offline Messages</h3>
+            <p>When someone's offline, messages wait for them:</p>
+            <div class="code-block">
+                <pre><code class="language-text">
+// Alex is offline when Denis sends a message
+> message alex Hey, are you there?
+User is offline. Message will be delivered when they log in.
+>
+
+
+// Later when Alex logs in:
+> login alex
+[OFFLINE MESSAGE][2][DENIS]: Hey, are you there?
+>
+                </code></pre>
+            </div>
+
+            <h3>3. Chat History</h3>
+            <p>Need to check previous conversations? Easy:</p>
+            <div class="code-block">
+                <pre><code class="language-text">
+> gethistory alex
+Chat history with ALEX:
+[1][ALEX]: Hey, how's the weather there?
+[2][DENIS]: It's sunny here!
+[3][ALEX]: Nice! Want to go for a walk?
+>
+                </code></pre>
+            </div>
+        </div>
+            <h3>Network Communication (TCP)</h3>
+            <p>I've used TCP (Transmission Control Protocol) for all communication because:</p>
+            <div class="note">
+                <ul>
+                    <li><strong>Reliability:</strong> TCP guarantees that messages arrive in order and without data loss</li>
+                    <li><strong>Connection-based:</strong> Maintains a stable connection between client and server</li>
+                    <li><strong>Error Checking:</strong> Automatically handles corrupted packets and retransmission</li>
+                    <li><strong>Flow Control:</strong> Prevents overwhelming receivers with too much data at once</li>
+                </ul>
+            </div>
+            <div class="code-block">
+                <pre><code class="language-cpp">
+// Server
+int server_fd = socket(AF_INET, SOCK_STREAM, 0);  // SOCK_STREAM for TCP
+bind(server_fd, (struct sockaddr *)&address, sizeof(address));
+listen(server_fd, 3);  // Listen for incoming connections
+
+// Client
+int sock = socket(AF_INET, SOCK_STREAM, 0);
+connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr));
+                </code></pre>
+            </div>
+            <p><strong>This makes TCP perfect for our messenger because:</strong></p>
+            <div class="note">
+            <ul>
+                <li>Messages must arrive in the exact order they were sent</li>
+                <li>We need to know if clients disconnect</li>
+                <li>No message data can be lost or corrupted</li>
+                <li>We maintain persistent connections for real-time chat</li>
+            </ul>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Behind the Scenes: Thread Safety</h2>
+            <p>Ever wonder how the app handles multiple users at once? Here's the secret:</p>
+
+            <h3>Shared Resources Protection</h3>
+            <div class="note">
+                <p>Think of it like a bathroom key:</p>
+                <ul>
+                    <li><strong>Regular Mutex:</strong> Only one person can use it at a time</li>
+                    <li><strong>Shared Mutex:</strong> Many can read the sign on the door, but only one can use it</li>
+                </ul>
+            </div>
+
+            <div class="code-block">
+                <pre><code class="language-cpp">
+// Reading online users (many can do this at once)
+{
+    shared_lock<shared_mutex> lock(logged_users_mutex);
+    // Check who's online
+}
+
+// Updating online users (only one at a time)
+{
+    unique_lock<shared_mutex> lock(logged_users_mutex);
+    // Update who's online
+}
+                </code></pre>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Behind the Scenes: Messages</h2>
+            
+            <h3>1. Message Handling System</h3>
+            <p>Here's the actual message structure used:</p>
+            <div class="code-block">
+                <pre><code class="language-cpp">
+struct Message {
+    string sender;       // Who sent the message
+    string receiver;     // Who should receive it
+    string content;      // The actual message
+    int message_id;      // Unique ID for each message
+    int reply_to_id;     // ID of message being replied to (-1 if not a reply)
+};
+                </code></pre>
+            </div>
+
+            <h3>2. Thread Safety Implementation</h3>
+            <p>Here's how shared resources are protected:</p>
+            <div class="code-block">
+                <pre><code class="language-cpp">
+// Global mutexes from server.cpp
+shared_mutex logged_users_mutex;    // For online users
+mutex offline_messages_mutex;       // For offline messages
+mutex history_mutex;               // For chat history
+mutex message_id_mutex;            // For message IDs
+
+// Example usage in login:
+unique_lock shared_mutex lock(logged_users_mutex);
+logged_users[local_username] = client_socket;
+socket_to_username[client_socket] = local_username;
+                </code></pre>
+            </div>
+
+            <h3>3. Message Storage</h3>
+            <p>The actual storage implementation:</p>
+            <div class="code-block">
+                <pre><code class="language-cpp">
+// Server-side storage
+unordered_map string, queue Message offline_messages;
+unordered_map string, vector Message message_history;
+unordered_map string, int logged_users;
+unordered_map int, string socket_to_username;
+                </code></pre>
+            </div>
+
+            <h3>4. Console Wizardry</h3>
+            <p>Here's how your chat window is kept clean when new messages arrive:</p>
+            <div class="code-block">
+                <pre><code class="language-cpp">
+// In your client code:
+mutex cout_mutex;  // Ensures clean console output
+
+void receive_messages(int sock) {
+    // ... other code ...
+    {
+        lock_guard mutex lock(cout_mutex);
+        clear_current_line();  // Clear the command prompt
+        cout << message << endl;
+        cout << "Enter Command: " << flush;  // Redraw the prompt
+    }
+}
+                </code></pre>
+            </div>
+
+            <h3>5. Smart Message Delivery</h3>
+            <p>The server manages messages based on user status:</p>
+            <div class="note">
+                <ul>
+                    <li><strong>Online users:</strong> Get messages right away</li>
+                    <li><strong>Offline users:</strong> Messages queue up</li>
+                    <li><strong>History:</strong> All messages are saved</li>
+                </ul>
+            </div>
+            <div class="code-block">
+                <pre><code class="language-cpp">
+// From your server's handle_command function:
+if (logged_users.count(receiver_username)) {
+    // User is online - send immediately
+    int receiver_socket = logged_users[receiver_username];
+    string full_message = "[" + to_string(msg.message_id) + "][" + toUpper(local_username) + "]: " + message_content + "\n";
+    send(receiver_socket, full_message.c_str(), full_message.length(), 0);
+} else {
+    // User is offline - queue the message
+    lock_guard<mutex> offline_lock(offline_messages_mutex);
+    offline_messages[receiver_username].push(msg);
+}
+                </code></pre>
+            </div>
+
+        <div class="section">
+            <h2>Future Improvements</h2>
+
+            <h3>1. Security & Privacy</h3>
+            <div class="note">
+                <ul>
+                    <li><strong>End-to-End Encryption:</strong> Implement secure message encryption</li>
+                    <li><strong>Message Expiration:</strong> Option to send messages that delete after being read</li>
+                </ul>
+            </div>
+
+            <h3>2. Enhanced Messaging Features</h3>
+            <div class="note">
+                <ul>
+                    <li><strong>Group Chats:</strong> Allow multiple users to chat together</li>
+                    <li><strong>File Sharing:</strong> Enable users to send files and images</li>
+                    <li><strong>Message Edit/Delete:</strong> Let users modify or remove sent messages</li>
+                    <li><strong>Message Status:</strong> Show if messages were delivered/read</li>
+                    <li><strong>Message Search:</strong> Search through chat history</li>
+                </ul>
+            </div>
+
+            <h3>3. User Experience</h3>
+            <div class="note">
+                <ul>
+                    <li><strong>GUI Client:</strong> Create a graphical interface</li>
+                    <li><strong>Message Formatting:</strong> Support for bold, italic, and other text styles</li>
+                    <li><strong>Emojis:</strong> Support for emoji reactions and messages</li>
+                    <li><strong>Notifications:</strong> Desktop notifications for new messages</li>
+                </ul>
+            </div>
+
+            <h3>4. Technical Improvements</h3>
+            <div class="note">
+                <ul>
+                    <li><strong>Persistent Storage:</strong> Save message history to a database</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Quick Command Reference</h2>
+            <table style="width:100%; border-collapse: collapse; margin: 20px 0;">
+                <tr>
+                    <th style="padding: 10px; border: 1px solid #ddd; background: #f5f5f5;">Command</th>
+                    <th style="padding: 10px; border: 1px solid #ddd; background: #f5f5f5;">What it does</th>
+                    <th style="padding: 10px; border: 1px solid #ddd; background: #f5f5f5;">Example</th>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #ddd;">login &lt;username&gt;</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">Logs you in</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">login denis</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #ddd;">logout</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">Logs you out</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">logout</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #ddd;">message &lt;user&gt; &lt;text&gt;</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">Sends a message</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">message denis Hello!</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #ddd;">reply &lt;id&gt; &lt;user&gt; &lt;text&gt;</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">Replies to a message</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">reply 1 alex Hi back!</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #ddd;">gethistory &lt;user&gt;</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">Shows chat history</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">gethistory denis</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #ddd;">whoisonline</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">Shows online users</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">whoisonline</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #ddd;">whoami</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">Shows current user</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">whoami</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #ddd;">exit</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">Disconnects the client</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">exit</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #ddd;">help</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">Prints available commands</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">help</td>
+                </tr>
+            </table>
+        <div class="section">
+            <h2>Tips and Tricks</h2>
+            <div class="note">
+                <ul>
+                    <li>Usernames are case-insensitive</li>
+                    <li>Type 'help' anytime to see available commands</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/prism.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-cpp.min.js"></script>
+</body>
+</html>
